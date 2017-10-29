@@ -1,0 +1,14 @@
+{
+  "name": "slideshow-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "neutrino start",
+    "build": "neutrino build"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "neutrino": "^7.2.3",
+    "neutrino-preset-web": "^7.2.3"
+  }
+}
