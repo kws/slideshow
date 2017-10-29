@@ -77,6 +77,8 @@ async function getImage() {
 
 const app = express();
 
+app.use(express.static('public'));
+
 app.get('/api/image', async (req, res) => {
   try {
     const image = await getImage();
@@ -109,6 +111,6 @@ app.get('/api/refresh', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
+  console.log(`Slideshow server listening on port ${port}!`);
 });
 
