@@ -9,28 +9,48 @@ const dbx = new Dropbox({ accessToken: process.env.DROPBOX_API_KEY });
 let imageList = [];
 let imageIx = 0;
 
+async function awaitChanges(cursor) {
+  console.log('Waiting for changes', cursor);
+  const response = await dbx.filesListFolderLongpoll({ cursor });
+  if (response.changes) {
+    console.log('change detected', response);
+    imageList = [];
+  } else {
+    awaitChanges(cursor);
+  }
+}
+
 async function loadImages() {
-  const response = await dbx.filesListFolder({ path: '/slideshow' });
+  console.log('Loading images');
+  const response = await dbx.filesListFolder({ path: '/slideshow/current' });
+  awaitChanges(response.cursor);
   const list = [];
   response.entries.forEach((entry) => {
     list.push({ name: entry.name, path: entry.path_lower });
   });
-  return list;
+  imageList = list;
 }
 
 async function getImageList() {
   if (imageList.length === 0) {
-    imageList = await loadImages();
+    await loadImages();
   }
   return imageList;
 }
 
 async function getImage() {
   const images = await getImageList();
+
+  // Safety check
+  if (imageIx >= images.length - 1) {
+    imageIx = 0;
+  }
+
+  // Fetch the image - should we have a fallback?
   let image = images[imageIx];
 
   // Check if image has expired
-  console.log(`Expecting image to expire ${image.expires} and comparing with ${Date.now()}`);
+  console.log(`Refreshing image in ${image.expires - Date.now()}ms`);
   if (image.expires && image.expires <= Date.now()) {
     image.expires = undefined;
     imageIx += 1;
@@ -45,12 +65,12 @@ async function getImage() {
     image.expires = Date.now() + (60 * 1000);
   }
 
-
   //
   if (!image.url) {
     const response = await dbx.filesGetTemporaryLink({ path: image.path });
     image.url = response.link;
   }
+
   return image;
 }
 
@@ -58,6 +78,27 @@ app.get('/api/image', async (req, res) => {
   try {
     const image = await getImage();
     res.send({ name: image.name, expires: image.expires, url: image.url });
+  } catch (err) {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  }
+});
+
+app.get('/api/images', async (req, res) => {
+  try {
+    await getImageList();
+    res.send(imageList);
+  } catch (err) {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  }
+});
+
+app.get('/api/refresh', async (req, res) => {
+  try {
+    imageList = [];
+    await getImageList();
+    res.send(imageList);
   } catch (err) {
     console.error(err.stack);
     res.status(500).send('Something broke!');
