@@ -1,14 +1,10 @@
 import React from 'react';
-
-const images = [
-  'https://upload.wikimedia.org/wikipedia/commons/d/d6/STS120LaunchHiRes-edit1.jpg',
-  'https://www.nasa.gov/sites/default/files/thumbnails/image/61a-s-0139.jpg',
-];
+import 'whatwg-fetch';
 
 class ImageList extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { date: new Date(), imageIx: 0 };
+    this.state = { image: {} };
   }
 
   componentWillMount() {
@@ -29,10 +25,11 @@ class ImageList extends React.Component {
   }
 
   tick() {
-    this.setState({
-      date: new Date(),
-      imageIx: this.state.imageIx >= images.length - 1 ? 0 : this.state.imageIx + 1,
-    });
+    if (!this.state.image.expires || this.state.image.expires <= Date.now()) {
+      fetch('/api/image').then(res => res.json()).then((image) => {
+        this.setState({ image });
+      });
+    }
   }
 
   updateDimensions() {
@@ -47,7 +44,8 @@ class ImageList extends React.Component {
 
   render() {
     const divStyle = {
-      backgroundImage: `url(${images[this.state.imageIx]})`,
+      width: `${this.state.width}px`,
+      height: `${this.state.height}px`,
       position: 'absolute',
       top: '0px',
       left: '0px',
@@ -56,13 +54,14 @@ class ImageList extends React.Component {
       backgroundPosition: 'center center',
       backgroundRepeat: 'no-repeat',
       overflow: 'hidden',
-      width: `${this.state.width}px`,
-      height: `${this.state.height}px`,
     };
+
+    if (this.state.image.url) {
+      divStyle.backgroundImage = `url(${this.state.image.url})`;
+    }
+
     return (
-      <div className="image" style={divStyle}>
-        <h1>{this.state.imageIx} - {this.state.date.toLocaleTimeString()}</h1>
-      </div>
+      <div className="image" style={divStyle} />
     );
   }
 }

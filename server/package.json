@@ -1,0 +1,20 @@
+{
+  "name": "slideshow-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "neutrino start",
+    "build": "neutrino build"
+  },
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "neutrino": "^7.2.3",
+    "neutrino-preset-node": "^7.2.3"
+  },
+  "dependencies": {
+    "dropbox": "^2.5.12",
+    "express": "^4.16.2",
+    "neutrino-preset-airbnb-base": "^7.2.3",
+    "source-map-support": "^0.5.0"
+  }
+}
