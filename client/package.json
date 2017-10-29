@@ -9,6 +9,13 @@
   "license": "MIT",
   "devDependencies": {
     "neutrino": "^7.2.3",
+    "neutrino-preset-airbnb": "^7.2.3",
+    "neutrino-preset-react": "^7.2.3",
     "neutrino-preset-web": "^7.2.3"
+  },
+  "dependencies": {
+    "neutrino-middleware-html-template": "^7.2.3",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
   }
 }
