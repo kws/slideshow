@@ -43,7 +43,7 @@ async function getImage() {
   const images = await getImageList();
 
   // Safety check
-  if (imageIx >= images.length - 1) {
+  if (imageIx >= images.length) {
     imageIx = 0;
   }
 
@@ -51,10 +51,10 @@ async function getImage() {
   let image = images[imageIx];
 
   // Check if image has expired
-  console.log(`Refreshing image in ${image.expires - Date.now()}ms`);
+  console.log(`Refreshing ${image.name} with index ${imageIx} in ${image.expires - Date.now()}ms`);
   if (image.expires && image.expires <= Date.now()) {
     image.expires = undefined;
-    imageIx += 1;
+    imageIx = images.indexOf(image) + 1;
     if (imageIx >= images.length) {
       imageIx = 0;
     }
@@ -72,6 +72,7 @@ async function getImage() {
     image.url = response.link;
   }
 
+  console.log(`Image index is now ${imageIx} and the current image is ${image.name}`);
   return image;
 }
 
