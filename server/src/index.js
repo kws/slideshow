@@ -1,8 +1,9 @@
 import express from 'express';
 import Dropbox from 'dropbox';
 
-const app = express();
 const port = process.env.PORT || 8000;
+const slideshowFolder = process.env.SLIDESHOW_FOLDER || '/slideshow/current';
+const imageTimeout = process.env.SLIDESHOW_TIMEOUT || 60;
 
 const dbx = new Dropbox({ accessToken: process.env.DROPBOX_API_KEY });
 
@@ -22,7 +23,7 @@ async function awaitChanges(cursor) {
 
 async function loadImages() {
   console.log('Loading images');
-  const response = await dbx.filesListFolder({ path: '/slideshow/current' });
+  const response = await dbx.filesListFolder({ path: slideshowFolder });
   awaitChanges(response.cursor);
   const list = [];
   response.entries.forEach((entry) => {
@@ -62,7 +63,7 @@ async function getImage() {
 
   // Set expiry on new images
   if (!image.expires) {
-    image.expires = Date.now() + (60 * 1000);
+    image.expires = Date.now() + (imageTimeout * 1000);
   }
 
   //
@@ -73,6 +74,8 @@ async function getImage() {
 
   return image;
 }
+
+const app = express();
 
 app.get('/api/image', async (req, res) => {
   try {
