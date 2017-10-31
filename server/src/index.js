@@ -29,6 +29,16 @@ async function loadImages() {
   response.entries.forEach((entry) => {
     list.push({ name: entry.name, path: entry.path_lower });
   });
+  list.sort((a, b) => {
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    if (nameA < nameB) {
+      return -1;
+    } else if (nameA > nameB) {
+      return 1;
+    }
+    return 0;
+  });
   imageList = list;
 }
 
