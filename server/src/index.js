@@ -78,9 +78,16 @@ async function getImage() {
 
 const app = express();
 
-app.use(express.static('public'));
+function nocache(req, res, next) {
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  next();
+}
 
-app.get('/api/image', async (req, res) => {
+app.use(nocache, express.static('public'));
+
+app.get('/api/image', nocache, async (req, res) => {
   try {
     const image = await getImage();
     res.send({ name: image.name, expires: image.expires, url: image.url });
@@ -90,7 +97,7 @@ app.get('/api/image', async (req, res) => {
   }
 });
 
-app.get('/api/images', async (req, res) => {
+app.get('/api/images', nocache, async (req, res) => {
   try {
     await getImageList();
     res.send(imageList);
@@ -100,7 +107,7 @@ app.get('/api/images', async (req, res) => {
   }
 });
 
-app.get('/api/refresh', async (req, res) => {
+app.get('/api/refresh', nocache, async (req, res) => {
   try {
     imageList = [];
     await getImageList();
