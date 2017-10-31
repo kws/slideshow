@@ -8,7 +8,8 @@ const imageTimeout = process.env.SLIDESHOW_TIMEOUT || 60;
 const dbx = new Dropbox({ accessToken: process.env.DROPBOX_API_KEY });
 
 let imageList = [];
-let imageIx = 0;
+let currentImageName;
+let currentExpires = Date.now();
 
 async function awaitChanges(cursor) {
   console.log('Waiting for changes', cursor);
@@ -52,18 +53,19 @@ async function getImageList() {
 async function getImage() {
   const images = await getImageList();
 
-  // Safety check
-  if (imageIx >= images.length) {
-    imageIx = 0;
+  // Try to find the current image in the list
+  let imageIx = 0;
+  if (currentImageName) {
+    imageIx = images.findIndex(el => el.name === currentImageName);
   }
 
   // Fetch the image - should we have a fallback?
   let image = images[imageIx];
 
   // Check if image has expired
-  console.log(`Refreshing ${image.name} with index ${imageIx} in ${image.expires - Date.now()}ms`);
-  if (image.expires && image.expires <= Date.now()) {
-    image.expires = undefined;
+  console.log(`Refreshing ${image.name} with index ${imageIx} in ${currentExpires - Date.now()}ms`);
+  if (currentExpires && currentExpires <= Date.now()) {
+    currentExpires = Date.now() + (imageTimeout * 1000);
     imageIx = images.indexOf(image) + 1;
     if (imageIx >= images.length) {
       imageIx = 0;
@@ -72,8 +74,8 @@ async function getImage() {
   }
 
   // Set expiry on new images
-  if (!image.expires) {
-    image.expires = Date.now() + (imageTimeout * 1000);
+  if (!currentExpires) {
+    currentExpires = Date.now() + (imageTimeout * 1000);
   }
 
   //
@@ -83,6 +85,7 @@ async function getImage() {
   }
 
   console.log(`Image index is now ${imageIx} and the current image is ${image.name}`);
+  currentImageName = image.name;
   return image;
 }
 
@@ -100,7 +103,7 @@ app.use(nocache, express.static('public'));
 app.get('/api/image', nocache, async (req, res) => {
   try {
     const image = await getImage();
-    res.send({ name: image.name, expires: image.expires, url: image.url });
+    res.send({ name: image.name, expires: currentExpires, url: image.url });
   } catch (err) {
     console.error(err.stack);
     res.status(500).send('Something broke!');
