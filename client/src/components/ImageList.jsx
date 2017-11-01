@@ -5,6 +5,7 @@ class ImageList extends React.Component {
   constructor(props) {
     super(props);
     this.state = { image: {} };
+    this.loadHandler = this.loadHandler.bind(this);
   }
 
   componentWillMount() {
@@ -27,7 +28,7 @@ class ImageList extends React.Component {
   tick() {
     if (!this.state.image.expires || this.state.image.expires <= Date.now()) {
       fetch('/api/image').then(res => res.json()).then((image) => {
-        this.setState({ image });
+        this.setState({ preload: image });
       });
     }
   }
@@ -39,6 +40,10 @@ class ImageList extends React.Component {
     const height = w.innerHeight || document.documentElement.clientHeight || body.clientHeight;
 
     this.setState({ width, height });
+  }
+
+  loadHandler() {
+    this.setState({ image: this.state.preload, preload: undefined });
   }
 
 
@@ -60,8 +65,15 @@ class ImageList extends React.Component {
       divStyle.backgroundImage = `url(${this.state.image.url})`;
     }
 
+    const imgStyle = {
+      display: 'none',
+    };
+
     return (
-      <div className="image" style={divStyle} />
+      <div>
+        <div className="image" style={divStyle} />
+        {this.state.preload ? (<img src={this.state.preload.url} alt="" onLoad={this.loadHandler} style={imgStyle} />) : (<div />)}
+      </div>
     );
   }
 }
