@@ -73,8 +73,6 @@ class ImageList extends React.Component {
       return (<div className="image" style={divStyle} key={image.url} title={image.name} />);
     });
 
-    console.log('images', imageItems.length);
-
     return (
       <div>
         <ReactCSSTransitionGroup
