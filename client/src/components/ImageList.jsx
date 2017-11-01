@@ -55,8 +55,8 @@ class ImageList extends React.Component {
 
         // Set a minimum time here as we don't want to overload the server
         let timeToExpire = image.expires - Date.now();
-        if (timeToExpire < 5) {
-          timeToExpire = 5;
+        if (timeToExpire < 5000) {
+          timeToExpire = 5000;
         }
         this.scheduledTimerId = setTimeout(() => this.checkForUpdates(), timeToExpire);
       });
