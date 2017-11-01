@@ -58,6 +58,9 @@ async function getImage() {
   if (currentImageName) {
     imageIx = images.findIndex(el => el.name === currentImageName);
   }
+  if (imageIx < 0) {
+    imageIx = 0;
+  }
 
   // Fetch the image - should we have a fallback?
   let image = images[imageIx];
