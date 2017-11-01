@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import uuidv1 from 'uuid/v1';
 import 'whatwg-fetch';
 
 import '../css/imagelist.css';
@@ -9,6 +10,7 @@ class ImageList extends React.Component {
   constructor(props) {
     super(props);
     this.loadHandler = this.loadHandler.bind(this);
+    this.imgTagId = uuidv1();
   }
 
   componentWillMount() {
@@ -23,10 +25,25 @@ class ImageList extends React.Component {
     window.addEventListener('resize', this.updateDimensions.bind(this));
   }
 
+  componentDidUpdate() {
+    const imageTag = document.getElementById(this.imgTagId);
+    const imageLoaded = imageTag ? imageTag.complete : false;
+    if (imageLoaded) {
+      this.updateLoadedImage();
+    }
+  }
+
   componentWillUnmount() {
     clearInterval(this.timerID);
     window.removeEventListener('resize', this.updateDimensions.bind(this));
   }
+
+  updateLoadedImage() {
+    if (this.state.preload) {
+      this.setState({ images: [this.state.preload], preload: undefined });
+    }
+  }
+
 
   tick() {
     if (!this.state.expires || this.state.expires <= Date.now()) {
@@ -46,7 +63,7 @@ class ImageList extends React.Component {
   }
 
   loadHandler() {
-    this.setState({ images: [this.state.preload] });
+    this.updateLoadedImage();
   }
 
   render() {
@@ -83,7 +100,7 @@ class ImageList extends React.Component {
           {imageItems}
         </ReactCSSTransitionGroup>
 
-        {this.state.preload ? (<img src={this.state.preload.url} alt="" onLoad={this.loadHandler} style={imgStyle} />) : (<div />)}
+        {this.state.preload ? (<img id={this.imgTagId} src={this.state.preload.url} alt="" onLoad={this.loadHandler} style={imgStyle} />) : (<div />)}
       </div>
     );
   }
