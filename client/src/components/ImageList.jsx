@@ -18,11 +18,12 @@ class ImageList extends React.Component {
   }
 
   componentDidMount() {
-    this.timerID = setInterval(
-      () => this.tick(),
-      1000,
+    this.periodicTimerID = setInterval(
+      () => this.checkForUpdates(),
+      10000,
     );
     window.addEventListener('resize', this.updateDimensions.bind(this));
+    this.checkForUpdates();
   }
 
   componentDidUpdate() {
@@ -34,7 +35,8 @@ class ImageList extends React.Component {
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerID);
+    clearInterval(this.periodicTimerID);
+    if (this.scheduledTimerId) clearTimeout(this.scheduledTimerId);
     window.removeEventListener('resize', this.updateDimensions.bind(this));
   }
 
@@ -44,11 +46,19 @@ class ImageList extends React.Component {
     }
   }
 
-
-  tick() {
+  checkForUpdates() {
     if (!this.state.expires || this.state.expires <= Date.now()) {
       fetch('/api/image').then(res => res.json()).then((image) => {
         this.setState({ preload: image, expires: image.expires });
+        // Clear any outstanding timers
+        if (this.scheduledTimerId) clearTimeout(this.scheduledTimerId);
+
+        // Set a minimum time here as we don't want to overload the server
+        let timeToExpire = image.expires - Date.now();
+        if (timeToExpire < 5) {
+          timeToExpire = 5;
+        }
+        this.scheduledTimerId = setTimeout(() => this.checkForUpdates(), timeToExpire);
       });
     }
   }
