@@ -1,10 +1,13 @@
 import React from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import 'whatwg-fetch';
+
+import '../css/imagelist.css';
+
 
 class ImageList extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { image: {} };
     this.loadHandler = this.loadHandler.bind(this);
   }
 
@@ -26,9 +29,9 @@ class ImageList extends React.Component {
   }
 
   tick() {
-    if (!this.state.image.expires || this.state.image.expires <= Date.now()) {
+    if (!this.state.expires || this.state.expires <= Date.now()) {
       fetch('/api/image').then(res => res.json()).then((image) => {
-        this.setState({ preload: image });
+        this.setState({ preload: image, expires: image.expires });
       });
     }
   }
@@ -43,35 +46,45 @@ class ImageList extends React.Component {
   }
 
   loadHandler() {
-    this.setState({ image: this.state.preload, preload: undefined });
+    this.setState({ images: [this.state.preload] });
   }
 
-
   render() {
-    const divStyle = {
-      width: `${this.state.width}px`,
-      height: `${this.state.height}px`,
-      position: 'absolute',
-      top: '0px',
-      left: '0px',
-      zIndex: 7,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center center',
-      backgroundRepeat: 'no-repeat',
-      overflow: 'hidden',
-    };
-
-    if (this.state.image.url) {
-      divStyle.backgroundImage = `url(${this.state.image.url})`;
-    }
-
     const imgStyle = {
       display: 'none',
     };
 
+    const images = this.state.images ? this.state.images : [];
+    const imageItems = images.map((image) => {
+      const divStyle = {
+        width: `${this.state.width}px`,
+        height: `${this.state.height}px`,
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center center',
+        backgroundRepeat: 'no-repeat',
+        overflow: 'hidden',
+      };
+      if (image.url) {
+        divStyle.backgroundImage = `url(${image.url})`;
+      }
+      return (<div className="image" style={divStyle} key={image.url} title={image.name} />);
+    });
+
+    console.log('images', imageItems.length);
+
     return (
       <div>
-        <div className="image" style={divStyle} />
+        <ReactCSSTransitionGroup
+          transitionName="fade"
+          transitionEnterTimeout={500}
+          transitionLeaveTimeout={500}
+        >
+          {imageItems}
+        </ReactCSSTransitionGroup>
+
         {this.state.preload ? (<img src={this.state.preload.url} alt="" onLoad={this.loadHandler} style={imgStyle} />) : (<div />)}
       </div>
     );
