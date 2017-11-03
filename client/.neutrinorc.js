@@ -4,7 +4,10 @@ module.exports = {
   use: [
           ['neutrino-preset-react', {
             html: {
-                 title: 'Slideshow'
+              title: 'Slideshow',
+              scripts: [
+                {src: 'https://cdn.ravenjs.com/3.19.1/raven.min.js', crossorigin: 'anonymous'},
+              ]
             },
             devServer: {
               "host": "localhost",
@@ -18,12 +21,11 @@ module.exports = {
                   "secure": false
                 }
               ]
-
             },
           }],
           ['neutrino-preset-airbnb', {
             eslint: {
-              globals: ['document','window','fetch'],
+              globals: ['document','window','fetch','Raven'],
             }
           }],
         ]

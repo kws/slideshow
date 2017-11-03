@@ -59,6 +59,8 @@ class ImageList extends React.Component {
           timeToExpire = 5000;
         }
         this.scheduledTimerId = setTimeout(() => this.checkForUpdates(), timeToExpire);
+      }).catch((err) => {
+        Raven.captureException(err);
       });
     }
   }
