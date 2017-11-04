@@ -9,8 +9,9 @@ import '../css/imagelist.css';
 class ImageList extends React.Component {
   constructor(props) {
     super(props);
-    this.loadHandler = this.loadHandler.bind(this);
     this.imgTagId = uuidv1();
+    this.loadHandler = this.loadHandler.bind(this);
+    this.errorHandler = this.errorHandler.bind(this);
   }
 
   componentWillMount() {
@@ -41,8 +42,8 @@ class ImageList extends React.Component {
   }
 
   updateLoadedImage() {
-    if (this.state.preload) {
-      this.setState({ images: [this.state.preload], preload: undefined });
+    if (this.state.preload && this.state.preload !== this.state.image) {
+      this.setState({ image: this.state.preload });
     }
   }
 
@@ -65,6 +66,11 @@ class ImageList extends React.Component {
     }
   }
 
+  componentDidCatch(error, info) {
+    Raven.captureException(error, { extra: info, state: this.state });
+  }
+
+
   updateDimensions() {
     const w = window;
     const body = document.getElementsByTagName('body')[0];
@@ -78,29 +84,28 @@ class ImageList extends React.Component {
     this.updateLoadedImage();
   }
 
+  errorHandler(error) {
+    Raven.captureException(error, { message: 'Image load failed', state: this.state });
+  }
+
   render() {
-    const imgStyle = {
-      display: 'none',
+    const divStyle = {
+      width: `${this.state.width}px`,
+      height: `${this.state.height}px`,
+      backgroundSize: 'cover',
     };
 
-    const images = this.state.images ? this.state.images : [];
-    const imageItems = images.map((image) => {
-      const divStyle = {
-        width: `${this.state.width}px`,
-        height: `${this.state.height}px`,
-        position: 'absolute',
-        top: '0px',
-        left: '0px',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center center',
-        backgroundRepeat: 'no-repeat',
-        overflow: 'hidden',
-      };
-      if (image.url) {
-        divStyle.backgroundImage = `url(${image.url})`;
-      }
-      return (<div className="image" style={divStyle} key={image.url} title={image.name} />);
-    });
+    // We create an image so that we always have one
+    const image = {
+      url: '#',
+      name: '',
+    };
+
+    // Copy properties from state (if set) and update background
+    if (this.state.image && this.state.image.url) {
+      Object.assign(image, this.state.image);
+      divStyle.backgroundImage = `url(${image.url})`;
+    }
 
     return (
       <div>
@@ -109,10 +114,13 @@ class ImageList extends React.Component {
           transitionEnterTimeout={500}
           transitionLeaveTimeout={500}
         >
-          {imageItems}
+          <div className="image" style={divStyle} key={image.url} title={image.name} />
         </ReactCSSTransitionGroup>
 
-        {this.state.preload ? (<img id={this.imgTagId} src={this.state.preload.url} alt="" onLoad={this.loadHandler} style={imgStyle} />) : (<div />)}
+        {this.state.preload ?
+          (<img id={this.imgTagId} className="preloadImage" src={this.state.preload.url} alt="" onLoad={this.loadHandler} onError={this.errorHandler} />)
+          :
+          (<div />)}
       </div>
     );
   }
