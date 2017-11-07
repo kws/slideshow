@@ -1,0 +1,33 @@
+# This is a yaml file showing some of the options for the slideshow
+defaults:
+  duration: 20
+
+albums:
+
+  - path: album1
+    type: images # this is the default, so could be omitted
+    maxSlides: 6
+    order: random
+    defaults:
+      duration: 10
+      size: cover
+      text:
+        - pos: b # tl, t, tr, c, bl, b, br
+          content: Party
+
+  - path: album2
+    defaults:
+      duration: 30
+      size: contain
+    list:
+      - image01.jpg
+      - name: image02.png
+        size: cover
+      - image03.jpeg
+      - name: another.jpg
+        text: Group Photo # Defaults should apply to this
+      - final.jpg
+
+  - type: youtube
+    videoId: 7t-6eF0KNAM
+
