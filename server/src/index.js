@@ -81,10 +81,11 @@ async function getImage() {
     currentExpires = Date.now() + (imageTimeout * 1000);
   }
 
-  //
-  if (!image.url) {
+  // We can use urlExpires as a proxy to see if a temporary link exists
+  if (!image.urlExpires || image.urlExpires < Date.now()) {
     const response = await dbx.filesGetTemporaryLink({ path: image.path });
     image.url = response.link;
+    image.urlExpires = Date.now() + (180 * 60 * 1000); //expire after 3 hours
   }
 
   console.log(`Image index is now ${imageIx} and the current image is ${image.name}`);
