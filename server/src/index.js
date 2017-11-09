@@ -85,7 +85,7 @@ async function getImage() {
   if (!image.urlExpires || image.urlExpires < Date.now()) {
     const response = await dbx.filesGetTemporaryLink({ path: image.path });
     image.url = response.link;
-    image.urlExpires = Date.now() + (180 * 60 * 1000); //expire after 3 hours
+    image.urlExpires = Date.now() + (180 * 60 * 1000); // expire after 3 hours
   }
 
   console.log(`Image index is now ${imageIx} and the current image is ${image.name}`);
