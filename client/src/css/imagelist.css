@@ -1,9 +1,14 @@
+body {
+  background-color: #000
+}
+
 .image {
   position: absolute;
   top: 0px;
   left: 0px;
   background-position: center center;
   background-repeat: no-repeat;
+  background-size: contain;
   overflow: hidden;
 }
 
