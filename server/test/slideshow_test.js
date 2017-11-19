@@ -1,15 +1,16 @@
 import assert from 'assert';
-import Slideshow from '../src/SlideShow';
+import { createFilesystemSlideshow } from '../src/SlideShow';
 
-describe('simple', () => {
-  it('should be sane', () => {
+describe('basic', function() {
+  it('should initialise', async function() {
 
-    const fileList = ['file1','file2','file3'].map((entry) => {return { name: entry, path: '/slideshow/' + entry }});
+ 
+    const slideshow = createFilesystemSlideshow('./samples/basic', '', {});
+    assert.equal(slideshow.ready, false);
 
-    const ss = new Slideshow(fileList, 'c1');
+    await slideshow.init();
 
-    assert.equal(ss.fileList, fileList);
-    assert.equal(ss.cursor, 'c1');
+    assert.equal(slideshow.ready, true);
 
   });
 });
