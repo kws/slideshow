@@ -11,7 +11,8 @@
   "devDependencies": {
     "neutrino": "^7.2.3",
     "neutrino-preset-mocha": "^7.3.0",
-    "neutrino-preset-node": "^7.2.3"
+    "neutrino-preset-node": "^7.2.3",
+    "timeout-as-promise": "^1.0.0"
   },
   "dependencies": {
     "dropbox": "^2.5.12",

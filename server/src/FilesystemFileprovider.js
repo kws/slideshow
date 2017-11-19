@@ -20,11 +20,17 @@ export default class FilesystemFileprovider extends EventEmitter {
         if (err) {
           reject(err);
         } else {
-          const files = items.map((item) => { const file = { name: item }; return file; });
-          console.log(files);
+          const files = items.map((item) => {
+            const file = { name: item, path: this.path };
+            return file;
+          });
           fulfill(files);
         }
       });
     });
+  }
+
+  async getFileLink(file) {
+    return `${this.uriPrefix}${file.name}`;
   }
 }

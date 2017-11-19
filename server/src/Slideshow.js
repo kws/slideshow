@@ -37,17 +37,24 @@ export default class Slideshow {
   }
 
   createDefaultAlbum() {
-    return [new Album(this.fileProvider, this.defaults)];
+    return new Album(this.fileProvider, this.defaults);
   }
 
-  getImage() {
-    console.log(this, 'GET IMAGE');
+  async getImage() {
+    let album = await this.getAlbum();
+    let image = await album.getImage();
+    // The album may have finished, in which case we need to continue to the next album
+    if (!image || album.isFinished()) {
+      album = await this.getAlbum();
+      image = await album.getImage();
+    }
+    return image;
   }
 
   /*
     Returns the current album
   */
-  getAlbum() {
+  async getAlbum() {
     let album = this.albums[this.currentAlbum];
 
     // If the current album is finished, then pick next
@@ -60,7 +67,7 @@ export default class Slideshow {
 
       // Initialise the next album
       album = this.albums[this.currentAlbum];
-      album.init();
+      await album.init();
     }
 
     return album;
