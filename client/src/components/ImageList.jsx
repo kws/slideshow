@@ -92,7 +92,11 @@ class ImageList extends React.Component {
     const divStyle = {
       width: `${this.state.width}px`,
       height: `${this.state.height}px`,
-      backgroundSize: 'cover',
+    };
+
+    const bgStyle = {
+      width: `${document.documentElement.clientWidth + 40}px`,
+      height: `${document.documentElement.clientHeight + 40}px`,
     };
 
     // We create an image so that we always have one
@@ -105,6 +109,7 @@ class ImageList extends React.Component {
     if (this.state.image && this.state.image.url) {
       Object.assign(image, this.state.image);
       divStyle.backgroundImage = `url(${image.url})`;
+      bgStyle.backgroundImage = `url(${image.url})`;
     }
 
     return (
@@ -114,7 +119,10 @@ class ImageList extends React.Component {
           transitionEnterTimeout={500}
           transitionLeaveTimeout={500}
         >
-          <div className="image" style={divStyle} key={image.url} title={image.name} />
+	  <div key={image.url}>
+	    <div className="imageBG" style={bgStyle} title={image.name} />
+	    <div className="image" style={divStyle} title={image.name} />
+	  </div>
         </ReactCSSTransitionGroup>
 
         {this.state.preload ?
