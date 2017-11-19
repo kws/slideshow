@@ -5,6 +5,8 @@
   that the slide exists in the current mode, in which case it will pick the most appopriate
   starting point
 */
+import yaml from 'js-yaml';
+
 import DropboxFileprovider from './DropboxFileprovider';
 import FilesystemFileprovider from './FilesystemFileprovider';
 import Album from './Album';
@@ -26,14 +28,21 @@ export default class Slideshow {
 
     // Decide whether we're running in advanced or basic mode
     this.albums = slideshowDefinition ?
-      this.parseDefinition(slideshowDefinition) : [this.createDefaultAlbum(fileList)];
+      await this.parseDefinition(slideshowDefinition) : [this.createDefaultAlbum()];
 
     this.currentAlbum = 0;
     this.ready = true;
   }
 
-  parseDefinition(slideshowDefinition) {
-    console.log(this, slideshowDefinition);
+  async parseDefinition(slideshowDefinition) {
+    const configContent = await this.fileProvider.getFileContent(slideshowDefinition);
+    const config = yaml.safeLoad(configContent, 'utf8');
+    const albums = [];
+    config.albums.forEach((album) => {
+      const defaults = Object.assign({}, this.defaults, config.defaults, album.defaults);
+      albums.push(new Album(this.fileProvider, defaults, album));
+    });
+    return albums;
   }
 
   createDefaultAlbum() {
@@ -55,6 +64,9 @@ export default class Slideshow {
     Returns the current album
   */
   async getAlbum() {
+    if (!this.albums) {
+      await this.init();
+    }
     let album = this.albums[this.currentAlbum];
 
     // If the current album is finished, then pick next

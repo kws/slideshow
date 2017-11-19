@@ -3,7 +3,7 @@ import delay from 'timeout-as-promise';
 import { createFilesystemSlideshow } from '../src/SlideShow';
 
 
-describe('Slideshow Operations', function() {
+describe('Basic Slideshow Operations', function() {
   it('should initialise', async function() {
     const slideshow = createFilesystemSlideshow('./samples/basic', '', {});
     assert.equal(slideshow.ready, false);
@@ -24,7 +24,7 @@ describe('Slideshow Operations', function() {
   });
 
   it('should load new image if I wait', async function() {
-    const slideshow = createFilesystemSlideshow('./samples/basic', '', {imageTimeout: 0.1});
+    const slideshow = createFilesystemSlideshow('./samples/basic', '', {duration: 0.1});
     await slideshow.init();
 
     // We start with first image
@@ -39,7 +39,7 @@ describe('Slideshow Operations', function() {
 
   it('after list is finished, Album should be finished', async function() {
   	// Set images for immediate timeout
-    const slideshow = createFilesystemSlideshow('./samples/basic', '', {imageTimeout: 0});
+    const slideshow = createFilesystemSlideshow('./samples/basic', '', {duration: 0});
     await slideshow.init();
 
     // We start with first image
@@ -54,6 +54,25 @@ describe('Slideshow Operations', function() {
     image = await slideshow.getImage();
     assert.equal(image.name, 'image1.jpg');
  
+  });
+
+});
+
+describe('Advanced Slideshow Operations', function() {
+  it('should initialise', async function() {
+    const slideshow = createFilesystemSlideshow('./samples/advanced', '', {});
+    assert.equal(slideshow.ready, false);
+    await slideshow.init();
+    assert.equal(slideshow.ready, true);
+  });
+
+  it('should load files', async function() {
+    const slideshow = createFilesystemSlideshow('./samples/advanced', '/images/', {});
+    await slideshow.init();
+    let image = await slideshow.getImage();
+    let album = await slideshow.getAlbum();
+    console.log(album.imageList);
+    assert.equal(album.imageList.length, 6);
   });
 
 });

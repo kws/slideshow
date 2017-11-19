@@ -1,16 +1,23 @@
 import express from 'express';
 import Dropbox from 'dropbox';
-import { createDropboxSlideshow } from './Slideshow';
+import { createDropboxSlideshow, createFilesystemSlideshow } from './Slideshow';
 
 const dbx = new Dropbox({ accessToken: process.env.DROPBOX_API_KEY });
 const slideshowFolder = process.env.SLIDESHOW_FOLDER || '/slideshow/current';
 const defaults = {
-  imageTimeout: process.env.SLIDESHOW_TIMEOUT || 60,
+  duration: process.env.SLIDESHOW_DURATION || 60,
 };
 
 const port = process.env.PORT || 8000;
 
-let slideshow = createDropboxSlideshow(dbx, slideshowFolder, defaults);
+function createSlideshow() {
+  let slideshow = createDropboxSlideshow(dbx, slideshowFolder, defaults);
+  slideshow = createFilesystemSlideshow('samples/advanced/', '');
+  return slideshow;
+}
+
+let slideshow = createSlideshow();
+
 
 const app = express();
 
@@ -36,7 +43,7 @@ app.get('/api/image', nocache, async (req, res) => {
 
 app.get('/api/refresh', nocache, async (req, res) => {
   try {
-    slideshow = createDropboxSlideshow(dbx, slideshowFolder);
+    slideshow = createSlideshow();
     const image = await slideshow.getImage();
     res.send(image);
   } catch (err) {

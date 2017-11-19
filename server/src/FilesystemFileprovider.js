@@ -5,26 +5,41 @@
   actually serves the content.
 */
 import fs from 'fs';
+import path from 'path';
 import EventEmitter from 'events';
 
 export default class FilesystemFileprovider extends EventEmitter {
-  constructor(path, uriPrefix) {
+  constructor(file, uriPrefix) {
     super();
-    this.path = path;
+    this.path = file;
     this.uriPrefix = uriPrefix;
   }
 
-  fileList() {
+  fileList(file) {
+    const fullPath = file ? path.join(this.path, file) : this.path;
     return new Promise((fulfill, reject) => {
-      fs.readdir(this.path, (err, items) => {
+      fs.readdir(fullPath, (err, items) => {
         if (err) {
           reject(err);
         } else {
           const files = items.map((item) => {
-            const file = { name: item, path: this.path };
-            return file;
+            const result = { name: item, path: path.relative(this.path, fullPath) };
+            return result;
           });
           fulfill(files);
+        }
+      });
+    });
+  }
+
+  getFileContent(file) {
+    const fullPath = path.join(this.path, file.path, file.name);
+    return new Promise((fulfill, reject) => {
+      fs.readFile(fullPath, (err, content) => {
+        if (err) {
+          reject(err);
+        } else {
+          fulfill(content);
         }
       });
     });

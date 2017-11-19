@@ -21,13 +21,14 @@ albums:
       size: contain
     list:
       - image01.jpg
-      - name: image02.png
+      - name: image02.jpg
         size: cover
-      - image03.jpeg
-      - name: another.jpg
+        duration: 10
+      - image03.jpg
+      - name: image06.jpg
         text: Group Photo # Defaults should apply to this
-      - final.jpg
+      - ../album3/album3-02.jpg # Relative to path
 
-  - type: youtube
-    videoId: 7t-6eF0KNAM
+  # - type: youtube
+  #   videoId: 7t-6eF0KNAM
 

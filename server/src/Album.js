@@ -3,14 +3,43 @@
 */
 const imageFileRE = /\.(gif|jpe?g|png)$/i;
 const DEFAULTS = {
-  imageTimeout: 60,
+  duration: 60,
+};
+const CONFIG = {
+  path: '.',
 };
 
+function shuffle(arr) {
+  // Linting rules don't like modifying function arg
+  const a = arr;
+  // While there are elements in the array
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function nameComparator(a, b) {
+  const nameA = a.name.toLowerCase();
+  const nameB = b.name.toLowerCase();
+  if (nameA < nameB) {
+    return -1;
+  } else if (nameA > nameB) {
+    return 1;
+  }
+  return 0;
+}
+
 export default class Album {
-  constructor(fileProvider, defaults) {
+  constructor(fileProvider, defaults, config) {
     this.fileProvider = fileProvider;
     this.defaults = Object.assign({}, DEFAULTS, defaults);
+    this.config = Object.assign({}, CONFIG, config);
     this.finished = false;
+
+    console.log('DEFAULTS', this.defaults);
+    console.log('CONFIG', this.config);
   }
 
   isFinished() {
@@ -19,23 +48,31 @@ export default class Album {
 
   async init() {
     console.log('Loading images');
-    const allFiles = await this.fileProvider.fileList();
-    const list = [];
+    const allFiles = await this.fileProvider.fileList(this.config.path);
+
+    let list = [];
     allFiles.forEach((entry) => {
       if (imageFileRE.test(entry.name)) {
         list.push(entry);
       }
     });
-    list.sort((a, b) => {
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
-      if (nameA < nameB) {
-        return -1;
-      } else if (nameA > nameB) {
-        return 1;
-      }
-      return 0;
-    });
+
+    // Order
+    switch (this.config.order) {
+      case 'random':
+        list = shuffle(list);
+        break;
+      case 'asc':
+      default:
+        list.sort(nameComparator);
+        break;
+    }
+
+    // Max entries
+    if (this.config.maxSlides && this.config.maxSlides < list.length) {
+      list = list.slice(0, this.config.maxSlides);
+    }
+
     this.imageList = list;
     delete this.currentImageName;
     delete this.currentExpires;
@@ -67,7 +104,7 @@ export default class Album {
     let { currentExpires } = this;
     console.log(`Refreshing ${image.name} with index ${imageIx} in ${currentExpires - Date.now()}ms`);
     if (currentExpires && currentExpires <= Date.now()) {
-      currentExpires = Date.now() + (this.defaults.imageTimeout * 1000);
+      currentExpires = Date.now() + (this.defaults.duration * 1000);
       imageIx = images.indexOf(image) + 1;
 
       // We're done!
@@ -81,7 +118,7 @@ export default class Album {
 
     // Set expiry on new images
     if (!currentExpires) {
-      currentExpires = Date.now() + (this.defaults.imageTimeout * 1000);
+      currentExpires = Date.now() + (this.defaults.duration * 1000);
     }
     image.expires = currentExpires;
 
