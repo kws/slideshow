@@ -116,16 +116,13 @@ class ImageList extends React.Component {
       <div>
         <ReactCSSTransitionGroup
           transitionName="fade"
-          transitionEnterTimeout={500}
-          transitionLeaveTimeout={500}
-        >
-	  <div key={image.url}>
-	    <div className="imageBG" style={bgStyle} title={image.name} />
-	    <div className="image" style={divStyle} title={image.name} />
-	  </div>
-        </ReactCSSTransitionGroup>
+	  transitionEnterTimeout={500}
+	  transitionLeaveTimeout={500}
+	>
+	  <div className="image" style={divStyle} title={image.name} key={image.url} />
+	</ReactCSSTransitionGroup>
 
-        {this.state.preload ?
+	{this.state.preload ?
           (<img id={this.imgTagId} className="preloadImage" src={this.state.preload.url} alt="" onLoad={this.loadHandler} onError={this.errorHandler} />)
           :
           (<div />)}
