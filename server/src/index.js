@@ -1,6 +1,6 @@
 import express from 'express';
 import Dropbox from 'dropbox';
-import { createDropboxSlideshow, createFilesystemSlideshow } from './Slideshow';
+import { createDropboxSlideshow } from './Slideshow';
 
 const dbx = new Dropbox({ accessToken: process.env.DROPBOX_API_KEY });
 const slideshowFolder = process.env.SLIDESHOW_FOLDER || '/slideshow/current';
@@ -11,9 +11,7 @@ const defaults = {
 const port = process.env.PORT || 8000;
 
 function createSlideshow() {
-  let slideshow = createDropboxSlideshow(dbx, slideshowFolder, defaults);
-  slideshow = createFilesystemSlideshow('samples/advanced/', '');
-  return slideshow;
+  return createDropboxSlideshow(dbx, slideshowFolder, defaults);
 }
 
 let slideshow = createSlideshow();

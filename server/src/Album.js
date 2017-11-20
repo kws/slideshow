@@ -74,6 +74,7 @@ export default class Album {
     }
 
     this.imageList = list;
+    this.finished = false;
     delete this.currentImageName;
     delete this.currentExpires;
   }
